@@ -1,31 +1,44 @@
 package main
 
-func main() {
-	p := PokerClass{}
-	l := LookupTable{}
-	l.getTable()
-	p.NewDeck()
-	p.Shuffle()
-	// table := p.Deal(4)
-	// fmt.Println(table.Players, "\n")
-	// fmt.Println(table.Deck.Flop)
-	// fmt.Println(table.Deck.Turn)
-	// fmt.Println(table.Deck.River, "\n")
-	table := Table{
-		Players: [][]Card{
-			{{Rank: "2", Suit: "Clubs", Value: 0}, {Rank: "3", Suit: "Clubs", Value: 1}},
-			{{Rank: "4", Suit: "Clubs", Value: 2}, {Rank: "5", Suit: "Clubs", Value: 3}},
-		},
-		Deck: TableDeck{
-			Flop: []Card{
-				{Rank: "A", Suit: "Spades", Value: 51}, // A♠ = 13×3 + 12
-				{Rank: "K", Suit: "Spades", Value: 50}, // K♠
-				{Rank: "Q", Suit: "Spades", Value: 49}, // Q♠
-			},
-			Turn:  Card{Rank: "J", Suit: "Spades", Value: 48}, // J♠
-			River: Card{Rank: "T", Suit: "Spades", Value: 47}, // T♠
-		},
-	}
+import (
+	"fmt"
+	"os"
+)
 
-	p.GetAllTableIndexedWins(table, l.TABLE)
+func main() {
+	file, err := os.OpenFile("output.txt", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Fprintln(file, "Error opening or creating file:", err)
+		return
+	}
+	defer file.Close()
+	p := PokerClass{}
+	p.getTable()
+	p.NewDeck()
+	for i := 0; i < 100; i++ {
+		fmt.Fprintln(file, "Game: ", i, "Starts\n")
+		p.Shuffle()
+		table := p.Deal(2)
+		// fmt.Fprintln(file, "Players: ", table.Players, "\n")
+		for plNum, pl := range table.Players {
+			fmt.Fprintln(file, "Player", plNum, "With hand: ", pl[0].Rank, pl[0].Suit, pl[1].Rank, pl[1].Suit, "\n")
+		}
+		fmt.Fprintln(file, "Flop: ", table.Deck.Flop)
+		fmt.Fprintln(file, "Turn: ", table.Deck.Turn)
+		fmt.Fprintln(file, "River: ", table.Deck.River, "\n")
+
+		results := p.GetAllTableIndexedWins(table)
+
+		winner := results[0]
+		for _, result := range results {
+			if winner.BaseValue < result.BaseValue {
+				winner = result
+			}
+		}
+		fmt.Fprintln(file, results)
+		fmt.Fprintln(file, "Winner is player ", winner.PlayerNumber)
+		fmt.Fprintln(file, "With hand: ", winner.Type, "\n")
+		fmt.Fprintln(file, "Game: ", i, "Ends\n")
+	}
+	// fmt.Fprintln(file, l.TABLE[50:100])
 }
