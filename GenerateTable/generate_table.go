@@ -8,7 +8,7 @@ import (
 )
 
 func min(a int, b int) int {
-	if a > b {
+	if a < b {
 		return a
 	}
 
@@ -43,6 +43,8 @@ func swapIfLess(workcards *[8]int, i, j int) {
 }
 
 func MakeID(IDin int64, newcard int) int64 {
+	numcards = 0
+
 	var ID int64 = 0
 	var suitcount [4 + 1]int
 	var rankcount [13 + 1]int
@@ -342,7 +344,12 @@ func main() {
 	}
 	defer fout.Close()
 
-	err = binary.Write(fout, binary.LittleEndian, HR[:])
+	out := make([]int32, len(HR))
+	for i, v := range HR {
+		out[i] = int32(v)
+	}
+
+	err = binary.Write(fout, binary.LittleEndian, out)
 	if err != nil {
 		fmt.Println("Error writing file:", err)
 		os.Exit(1)

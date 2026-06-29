@@ -35,19 +35,6 @@ const (
 	Ace   = 12
 )
 
-var value_str = []string{
-	"",
-	"Straight Flush",
-	"Four of a Kind",
-	"Full House",
-	"Flush",
-	"Straight",
-	"Three of a Kind",
-	"Two Pair",
-	"One Pair",
-	"High Card",
-}
-
 func RANK(x int) int {
 	return (x >> 8) & 0xF
 }

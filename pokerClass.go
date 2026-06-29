@@ -58,7 +58,7 @@ func (p *PokerClass) Shuffle() {
 func (p *PokerClass) Deal(numberOfPlayers int) Table {
 	players := [][]Card{}
 
-	for i := 0; i < numberOfPlayers; i++ {
+	for i := range numberOfPlayers {
 		players = append(players, []Card{p.Deck[i], p.Deck[i+numberOfPlayers]})
 	}
 

@@ -549,15 +549,16 @@ var hash_values []int = []int{
 	166, 5438, 2627, 2266, 2320, 166, 2588, 4790, 4290, 166, 4767, 5829, 2925, 5916, 2133, 166}
 
 func find_fast(u int) int {
-	var a, b, r int
-	u += 0xe91aaa35
-	u ^= u >> 16
-	u += u << 8
-	u ^= u >> 4
-	b = (u >> 8) & 0x1ff
-	a = (u + (u << 2)) >> 19
-	r = a ^ hash_adjust[b]
-	return r
+	x := uint32(u)
+
+	x += 0xe91aaa35
+	x ^= x >> 16
+	x += x << 8
+	x ^= x >> 4
+	b := (x >> 8) & 0x1ff
+	a := (x + (x << 2)) >> 19
+	r := a ^ uint32(hash_adjust[b])
+	return int(r)
 }
 
 func eval5(c1, c2, c3, c4, c5 int) int {
