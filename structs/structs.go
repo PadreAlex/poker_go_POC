@@ -1,4 +1,4 @@
-package main
+package poker_structs
 
 type Card struct {
 	Rank  string

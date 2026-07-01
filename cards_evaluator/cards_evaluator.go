@@ -1,4 +1,4 @@
-package main
+package cards_evaluator
 
 import (
 	"encoding/binary"
@@ -6,20 +6,22 @@ import (
 	"math"
 	"math/rand/v2"
 	"os"
+	poker_helper "poker/helpers"
+	poker_structs "poker/structs"
 )
 
 type PokerClass struct {
-	Deck  []Card
+	Deck  []poker_structs.Card
 	TABLE [32487834]int32
 }
 
-func (p *PokerClass) getTable() {
+func (p *PokerClass) GetTable() {
 	file, err := os.Open("./HandRanks.dat")
-	check(err)
+	poker_helper.CheckError(err)
 	defer file.Close()
 
 	stat, err := file.Stat()
-	check(err)
+	poker_helper.CheckError(err)
 
 	expectedSize := int64(32487834 * 4)
 	if stat.Size() != expectedSize {
@@ -27,7 +29,7 @@ func (p *PokerClass) getTable() {
 	}
 
 	err = binary.Read(file, binary.LittleEndian, &p.TABLE)
-	check(err)
+	poker_helper.CheckError(err)
 }
 
 func (p *PokerClass) NewDeck() {
@@ -36,7 +38,7 @@ func (p *PokerClass) NewDeck() {
 	counter := 1
 	for _, rank := range ranks {
 		for _, suit := range suits {
-			p.Deck = append(p.Deck, Card{Rank: rank, Suit: suit, Value: int32(counter)})
+			p.Deck = append(p.Deck, poker_structs.Card{Rank: rank, Suit: suit, Value: int32(counter)})
 			counter++
 		}
 	}
@@ -55,14 +57,14 @@ func (p *PokerClass) Shuffle() {
 	}
 }
 
-func (p *PokerClass) Deal(numberOfPlayers int) Table {
-	players := [][]Card{}
+func (p *PokerClass) Deal(numberOfPlayers int) poker_structs.Table {
+	players := [][]poker_structs.Card{}
 
 	for i := range numberOfPlayers {
-		players = append(players, []Card{p.Deck[i], p.Deck[i+numberOfPlayers]})
+		players = append(players, []poker_structs.Card{p.Deck[i], p.Deck[i+numberOfPlayers]})
 	}
 
-	return Table{players, TableDeck{Flop: []Card{p.Deck[numberOfPlayers*2+1], p.Deck[numberOfPlayers*2+2], p.Deck[numberOfPlayers*2+3]}, Turn: p.Deck[numberOfPlayers*2+5], River: p.Deck[numberOfPlayers*2+7]}}
+	return poker_structs.Table{Players: players, Deck: poker_structs.TableDeck{Flop: []poker_structs.Card{p.Deck[numberOfPlayers*2+1], p.Deck[numberOfPlayers*2+2], p.Deck[numberOfPlayers*2+3]}, Turn: p.Deck[numberOfPlayers*2+5], River: p.Deck[numberOfPlayers*2+7]}}
 }
 
 func (p *PokerClass) LookupHand(cards []int32) int32 {
@@ -78,8 +80,8 @@ func (p *PokerClass) LookupHand(cards []int32) int32 {
 	return p.TABLE[eval+cards[6]]
 }
 
-func (p *PokerClass) GetAllTableIndexedWins(table Table) []TableResults {
-	var playersResult []TableResults
+func (p *PokerClass) GetAllTableIndexedWins(table poker_structs.Table) []poker_structs.TableResults {
+	var playersResult []poker_structs.TableResults
 
 	for i, player := range table.Players {
 		hand := []int32{
@@ -96,7 +98,7 @@ func (p *PokerClass) GetAllTableIndexedWins(table Table) []TableResults {
 		}
 
 		eval := p.LookupHand(hand)
-		playersResult = append(playersResult, TableResults{Salt: eval & 0x00000FFF, Type: HandRanks[eval>>12], BaseValue: eval, PlayerNumber: i})
+		playersResult = append(playersResult, poker_structs.TableResults{Salt: eval & 0x00000FFF, Type: poker_structs.HandRanks[eval>>12], BaseValue: eval, PlayerNumber: i})
 	}
 	return playersResult
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"poker/cards_evaluator"
 )
 
 func main() {
@@ -12,20 +13,20 @@ func main() {
 		return
 	}
 	defer file.Close()
-	p := PokerClass{}
-	p.getTable()
+	p := cards_evaluator.PokerClass{}
+	p.GetTable()
 	p.NewDeck()
-	for i := 0; i < 100; i++ {
-		fmt.Fprintln(file, "Game: ", i, "Starts\n")
+	for i := range 100 {
+		fmt.Fprintln(file, "Game: ", i, "Starts")
 		p.Shuffle()
 		table := p.Deal(2)
 		// fmt.Fprintln(file, "Players: ", table.Players, "\n")
 		for plNum, pl := range table.Players {
-			fmt.Fprintln(file, "Player", plNum, "With hand: ", pl[0].Rank, pl[0].Suit, pl[1].Rank, pl[1].Suit, "\n")
+			fmt.Fprintln(file, "Player", plNum, "With hand: ", pl[0].Rank, pl[0].Suit, pl[1].Rank, pl[1].Suit)
 		}
 		fmt.Fprintln(file, "Flop: ", table.Deck.Flop)
 		fmt.Fprintln(file, "Turn: ", table.Deck.Turn)
-		fmt.Fprintln(file, "River: ", table.Deck.River, "\n")
+		fmt.Fprintln(file, "River: ", table.Deck.River)
 
 		results := p.GetAllTableIndexedWins(table)
 
@@ -37,8 +38,9 @@ func main() {
 		}
 		fmt.Fprintln(file, results)
 		fmt.Fprintln(file, "Winner is player ", winner.PlayerNumber)
-		fmt.Fprintln(file, "With hand: ", winner.Type, "\n")
-		fmt.Fprintln(file, "Game: ", i, "Ends\n")
+		fmt.Fprintln(file, "With hand: ", winner.Type)
+		fmt.Fprintln(file, "Game: ", i, "Ends")
+		fmt.Fprintln(file, " ")
 	}
 	// fmt.Fprintln(file, l.TABLE[50:100])
 }

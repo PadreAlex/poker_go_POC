@@ -28,13 +28,17 @@ var HandCategoryNames = []string{
 	"Straight Flush",
 }
 
-var IDs [612978]int64
+// var IDs [612978]int64
+var IDs = make([]int64, 1, 612978)
+var idIndex = make(map[int64]int, 612978)
+
 var HR [32487834]int
 
 var numIDs int = 1
 var numcards int = 0
 var maxHR int = 0
-var maxID int64 = 0
+
+// var maxID int64 = 0
 
 func swapIfLess(workcards *[8]int, i, j int) {
 	if workcards[i] < workcards[j] {
@@ -52,7 +56,7 @@ func MakeID(IDin int64, newcard int) int64 {
 	var cardnum int
 	var getout int = 0
 
-	for cardnum := 0; cardnum < 6; cardnum++ {
+	for cardnum := range 6 {
 		workcards[cardnum+1] = int((IDin >> (8 * cardnum)) & 0xff)
 	}
 
@@ -133,35 +137,16 @@ func SaveID(ID int64) int {
 		return 0
 	}
 
-	if ID >= maxID {
-		if ID > maxID {
-			IDs[numIDs] = ID
-			numIDs++
-			maxID = ID
-		}
-		return numIDs - 1
+	if slot, ok := idIndex[ID]; ok {
+		return slot
 	}
 
-	low := 0
-	high := numIDs - 1
+	slot := len(IDs)
+	idIndex[ID] = slot
+	IDs = append(IDs, ID)
+	numIDs = len(IDs)
 
-	for high-low > 1 {
-		mid := (high + low + 1) / 2
-		diff := IDs[mid] - ID
-		if diff > 0 {
-			high = mid
-		} else if diff < 0 {
-			low = mid
-		} else {
-			return mid
-		}
-	}
-
-	copy(IDs[high+1:], IDs[high:numIDs])
-	IDs[high] = ID
-	numIDs++
-
-	return high
+	return slot
 }
 
 func DoEval(IDin int64) int {
@@ -176,7 +161,7 @@ func DoEval(IDin int64) int {
 
 	// Extract cards from the 64-bit ID
 	if IDin != 0 {
-		for cardnum := 0; cardnum < 7; cardnum++ {
+		for cardnum := range 7 {
 			card := int((IDin >> (8 * cardnum)) & 0xff)
 			if card == 0 {
 				break
@@ -267,19 +252,21 @@ func main() {
 
 	fmt.Println("\nGetting Card IDs!")
 
-	for IDnum := 0; IDs[IDnum] != 0 || IDnum == 0; IDnum++ {
+	for IDnum := 0; IDnum < numIDs; IDnum++ {
 		for card = 1; card < 53; card++ {
 			ID = MakeID(IDs[IDnum], card)
 			if numcards < 7 {
 				SaveID(ID)
 			}
 		}
-		fmt.Printf("\rID - %d", IDnum)
+		if IDnum%10000 == 0 {
+			fmt.Printf("\rID - %d", IDnum)
+		}
 	}
 
 	fmt.Println("\nSetting HandRanks!")
 
-	for IDnum := 0; IDs[IDnum] != 0 || IDnum == 0; IDnum++ {
+	for IDnum := 0; IDnum < numIDs; IDnum++ {
 		for card = 1; card < 53; card++ {
 			ID = MakeID(IDs[IDnum], card)
 
@@ -297,7 +284,9 @@ func main() {
 			HR[IDnum*53+53] = DoEval(IDs[IDnum])
 		}
 
-		fmt.Printf("\rID - %d", IDnum)
+		if IDnum%10000 == 0 {
+			fmt.Printf("\rID - %d", IDnum)
+		}
 	}
 
 	fmt.Printf("\nNumber IDs = %d\nmaxHR = %d\n", numIDs, maxHR)
